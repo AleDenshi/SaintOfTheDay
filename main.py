@@ -58,15 +58,19 @@ async def send_message(channel_id: str, date: str) -> None:
 
 # Function to send messages to all active channels
 async def send_saints(date):
-    print("Attempting to send the saint of the day for", date)
     for i in config["channels"]:
+        channel = i["channel"]
+        utctime = i["utctime"]
         try:
-            if i["utctime"] == datetime.utcnow().strftime("%H-%M"):
-                print("What we're passing in:", i)
-                await send_message(i["channel"], date)
+            if utctime == datetime.utcnow().strftime("%H-%M"):
+                print("It's", utctime, ", attempting to send the saint of the day for", date, "in channel", channel)
+                await send_message(channel, date)
         except Exception as e:
-            print(e, "Could not send message!")
+            print(e, "Could not send message in channel", channel + "!")
 
+# DISCORD COMMANDS
+
+# Command to add saints feed to that channel
 @bot.tree.command(name="addchannel", description="Adds the Saints of the Day feed to the current channel.")
 async def addchannel(interaction: Interaction):
     channel_id = interaction.channel_id
@@ -86,9 +90,7 @@ async def addchannel(interaction: Interaction):
     except:
         await interaction.response.send_message("An error occurred trying to add the channel. Please contact the creator of the bot.", ephemeral=True)
 
-
-
-
+# Command to remove saints feed from that channel
 @bot.tree.command(name="removechannel", description="Remove the Saints of the Day feed from the current channel.")
 async def removechannel(interaction: Interaction):
     channel_id = interaction.channel_id
@@ -136,7 +138,6 @@ async def on_ready() -> None:
 async def myloop():
     time = datetime.now().strftime("%H:%M")
     date = datetime.now().strftime("%m-%d")
-    print("Attempting to send the saint for", date)
     await send_saints(date)
 
 def main() -> None:
